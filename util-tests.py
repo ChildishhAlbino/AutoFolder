@@ -50,6 +50,7 @@ class ZipTest(unittest.TestCase):
 
         self.assertEqual(data, "12345", "Data from file should equal 12345")
         shutil.rmtree("./test")
+        remove("./test.zip")
 
 
 if __name__ == '__main__':
