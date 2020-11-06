@@ -7,7 +7,8 @@ from dataUtils import createKwargs
 
 def TASK_convert(pipelineData, arguments, iteratorConfig):
     print("Converting %s files!" % (len(pipelineData)))
-    for file in pipelineData:
+    for index, file in enumerate(pipelineData):
+        print("Converting... %s / %s" % (index + 1, len(pipelineData)))
         # if iterator, generator iterator response.
         if(iteratorConfig):
             iterationData = getIteratorData(iteratorConfig, file)
@@ -31,13 +32,14 @@ def TASK_rename(pipelineData, arguments, iteratorConfig):
 
 
 def TASK_unzip(pipelineData, arguments, iteratorConfig):
-    for file in pipelineData:
+    for index, file in enumerate(pipelineData):
+        print("Converting... %s / %s" % (index + 1, len(pipelineData)))
         arguments["archivePath"] = file
         unzip(**arguments)
 
 
 def TASK_delete(pipelineData, arguments, iteratorConfig):
-    for file in pipelineData:
+    for index, file in enumerate(pipelineData):
         arguments["filePath"] = file
         delete(**arguments)
 

@@ -1,7 +1,8 @@
 import json
 from utils import inFileMask
-from AFEngineUtils import getConfigValues, getPipelineTaskValues, getTaskMethod, getFiles
+from AFEngineUtils import getConfigValues, getPipelineTaskValues, getTaskMethod
 from filters import applyFilters
+from fileUtils import getFiles
 
 
 def main():
@@ -18,10 +19,10 @@ def main():
         maskedItems = [item for item in files if inFileMask(
             item, fileMask, globalFileMasks)]
         # apply filters
-        filtered = applyFilters(filter, maskedItems)
+        print("Applying filters for %s files." % (len(maskedItems)))
+        filtered = applyFilters(filter, maskedItems, globalFileMasks)
         print("Executing pipeline task: %s on %s files" %
               (id, len(filtered)))
-
         task = getTaskMethod(task)
         if(task != None):
             task(filtered, arguments, iterator)

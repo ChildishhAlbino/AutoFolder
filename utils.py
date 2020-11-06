@@ -104,6 +104,7 @@ def copy(startingFolder, destinationFolder, files, deleteSourceFile):
 
 
 def getVideoDuration(videoPath):
+    print(videoPath)
     metaData = ffmpy.FFprobe(
         inputs={videoPath: None},
         global_options=[

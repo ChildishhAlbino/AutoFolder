@@ -1,4 +1,8 @@
 
+from utils import inFileMask
+from fileUtils import getFiles
+
+
 def fillWithIterationData(iterationData, argument):
     if(argument == None):
         return argument
@@ -23,3 +27,15 @@ def createKwargs(arguments, file, iteration):
     iterationArguments = fillArguments(iteration, arguments)
     iterationArguments["inputPath"] = file
     return iterationArguments
+
+
+def fillConditionValue(rawFilterValue, valueOptions, globalData):
+    print("f")
+    filled = rawFilterValue
+    if(filled == "|directoryData|"):
+        filled = getFiles(valueOptions["directoryData"])
+        filled = [f for f in filled if inFileMask(
+            f, valueOptions["fileMask"], globalData["globalFileMasks"])]
+        return (filled, "directoryData(%s)" % (valueOptions["fileMask"]))
+    else:
+        return (rawFilterValue, rawFilterValue)
