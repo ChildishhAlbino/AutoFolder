@@ -44,7 +44,7 @@ def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions):
         inputs={inputPath: inputOptions},
         outputs={convertedFileName: outputOptions}
     )
-    print(convert.cmd)
+    print("")
     convert.run()
 
 

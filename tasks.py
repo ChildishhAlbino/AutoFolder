@@ -16,10 +16,11 @@ def TASK_convert(pipelineData, arguments, iteratorConfig):
             kwargsArray = [createKwargs(arguments, file, iteration)
                            for iteration in iterationData]
 
-            print("Iterator detected! Converting file into %s files!" %
+            print("\nIterator detected! Converting file into %s files!" %
                   (len(kwargsArray)))
 
-            for kwargs in kwargsArray:
+            for index, kwargs in enumerate(kwargsArray):
+                print("\nIterating... %s / %s" % (index + 1, len(kwargsArray)))
                 convert(**kwargs)
         else:
             arguments["inputPath"] = file
