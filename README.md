@@ -1,4 +1,4 @@
-# AutoFolder
+# AutoFolder (WIP)
 
 Python Script to move files from one folder to another and apply transformations along the way.
 
@@ -10,6 +10,7 @@ With some simple yet powerful configuration, files can be move from one director
 - Unzipping zipped files.
 - Renaming files
 - Filter out certain images sizes.
+- Segment files based on duration _(video file types only.)_
 
 Tasks are configured in a pipeline where the first task is fed the contents of the source directory and subsequent steps retrieve the most up to date version of the directory.
 
@@ -40,7 +41,21 @@ There are 4 main config options for a pipeline task:
 
 The current lists of tasks includes:
 
-- Converting File type (uses ffmpeg, will be multi-threaded)
+- Converting File type
 - Unzipping files
 - Renaming Files
 - Deleting files
+- Segmenting
+
+## Filters
+
+WIP
+
+## Basic process:
+
+For a given pipeline task, the following steps will be run:
+
+1. The directory data will be updated with all files that fit inside the file mask for this task.
+2. Any filters that are to be applied will be applied to the above dataset.
+3. Finally, the task will be run with the above data. If an iterator is present the step will be run multiple times _(for the same file)_ based on the configuration.
+4. If another step is present, the process begins again for that step's transformation. Else, autofolder will begin to dump the source directory to the output directory.
