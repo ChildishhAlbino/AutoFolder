@@ -73,7 +73,6 @@ def rename(filePath, newFileName):
 
 
 def delete(filePath):
-    print("delete")
     if (isfile(filePath)):
         remove(filePath)
     else:

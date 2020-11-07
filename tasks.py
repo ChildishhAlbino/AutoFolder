@@ -16,12 +16,13 @@ def TASK_convert(pipelineData, arguments, iteratorConfig):
             kwargsArray = [createKwargs(arguments, file, iteration)
                            for iteration in iterationData]
 
-            print("\nIterator detected! Converting file into %s files!" %
+            print("Iterator detected! Converting file into %s files!" %
                   (len(kwargsArray)))
 
             for index, kwargs in enumerate(kwargsArray):
                 print("Iterating... %s / %s" % (index + 1, len(kwargsArray)))
                 convert(**kwargs)
+                print()
         else:
             arguments["inputPath"] = file
             convert(**arguments)
@@ -41,6 +42,7 @@ def TASK_unzip(pipelineData, arguments, iteratorConfig):
 
 def TASK_delete(pipelineData, arguments, iteratorConfig):
     for index, file in enumerate(pipelineData):
+        print("Deleting... %s / %s" % (index + 1, len(pipelineData)))
         arguments["filePath"] = file
         delete(**arguments)
 

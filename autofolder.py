@@ -28,6 +28,7 @@ def main(configLocation):
         if(task != None):
             task(filtered, arguments, iterator)
         printSeparator()
+    print("FINISHED")
 
 
 if (__name__ == "__main__"):
