@@ -20,7 +20,7 @@ def TASK_convert(pipelineData, arguments, iteratorConfig):
                   (len(kwargsArray)))
 
             for index, kwargs in enumerate(kwargsArray):
-                print("\nIterating... %s / %s" % (index + 1, len(kwargsArray)))
+                print("Iterating... %s / %s" % (index + 1, len(kwargsArray)))
                 convert(**kwargs)
         else:
             arguments["inputPath"] = file
