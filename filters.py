@@ -22,22 +22,18 @@ def filterVideos(filterFields, pipelineData, globalFileMasks):
     for filterField in filterFields:
         (fieldName, filterCondition, conditionValue,
          valueOptions) = getFilterFieldValues(filterField)
-        print(fieldName, filterCondition, conditionValue)
         fieldValue = video_filter_fields[fieldName]
         condition = conditions[filterCondition]
-        print("ABOUT TO FILTER")
         filtered = [item for item in filtered if condition(
             fieldValue(item), conditionValue)]
     return filtered
 
 
 def filterImages(filterFields, pipelineData, globalFileMasks):
-    print("filter images")
     filtered = pipelineData
     for filterField in filterFields:
         (fieldName, filterCondition, conditionValue,
          valueOptions) = getFilterFieldValues(filterField)
-        print(fieldName, filterCondition, conditionValue)
         fieldValue = image_filter_fields[fieldName]
         condition = conditions[filterCondition]
         filtered = [item for item in filtered if condition(
@@ -46,7 +42,6 @@ def filterImages(filterFields, pipelineData, globalFileMasks):
 
 
 def filterFiles(filterFields, pipelineData, globalFileMasks):
-    print("filter files")
     filtered = pipelineData
     for filterField in filterFields:
         (fieldName, filterCondition, conditionValue,
@@ -57,8 +52,6 @@ def filterFiles(filterFields, pipelineData, globalFileMasks):
         condition = conditions[filterCondition]
         filtered = [item for item in filtered if condition(
             fieldValue(item), filledConditionValue)]
-
-        print(fieldName, filterCondition, filledLabel)
     return filtered
 
 

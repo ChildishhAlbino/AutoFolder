@@ -84,12 +84,19 @@ def delete(filePath):
 def copy(startingFolder, destinationFolder, files, deleteSourceFile):
     dirs = [x[0]
             for x in walk(startingFolder) if x[0] != startingFolder]
-    for dir in dirs:
+    print("Recreating Directory Structure")
+
+    if(not exists(destinationFolder)):
+        mkdir(destinationFolder)
+
+    for index, dir in enumerate(dirs):
+        print("Creating directory %s / %s" % (index + 1, len(dirs)))
         replacedDir = dir.replace(startingFolder, destinationFolder)
         if(not exists(replacedDir)):
             mkdir(replacedDir)
 
-    for file in files:
+    for index, file in enumerate(files):
+        print("Coping file! %s / %s" % (index + 1, len(files)))
         copyfile(file, file.replace(startingFolder, destinationFolder))
 
     if(deleteSourceFile):
@@ -104,7 +111,6 @@ def copy(startingFolder, destinationFolder, files, deleteSourceFile):
 
 
 def getVideoDuration(videoPath):
-    print(videoPath)
     metaData = ffmpy.FFprobe(
         inputs={videoPath: None},
         global_options=[
@@ -127,3 +133,7 @@ def getImageResolution(imagePath):
         return dimensions
     except Exception as e:
         print(e)
+
+
+def printSeparator():
+    print("\n" + "-" * 30 + "\n")
