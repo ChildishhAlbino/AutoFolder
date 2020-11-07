@@ -44,7 +44,6 @@ def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions):
         inputs={inputPath: inputOptions},
         outputs={convertedFileName: outputOptions}
     )
-    print("")
     convert.run()
 
 
@@ -132,7 +131,7 @@ def getImageResolution(imagePath):
         dimensions = [h, w]
         return dimensions
     except Exception as e:
-        print(e)
+        pass
 
 
 def printSeparator():
