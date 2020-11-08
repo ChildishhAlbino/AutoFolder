@@ -1,7 +1,5 @@
 # These are the actual functions that will be run by the AF Engine to transform files.
 # They handle validation logic and extract boiler plate from the actual utility functions.
-from os import pipe
-from typing import Collection
 from utils import convert, rename, unzip, delete, copy
 from iterators import getIteratorData
 from dataUtils import createKwargs
@@ -11,17 +9,24 @@ from concurrent.futures import ThreadPoolExecutor
 def TASK_convert(pipelineData, arguments, iteratorConfig):
     length = len(pipelineData)
     with ThreadPoolExecutor() as executor:
-        executor.map(WRAP_MT(
-            arguments, iteratorConfig, MT_convert, pipelineData, length), pipelineData, length)
+        executor.map(HANDLE_MT(
+            arguments, iteratorConfig, MT_convert, pipelineData, length), pipelineData)
 
 
-def WRAP_MT(arguments, iteratorConfig, f, collection, length):
-    return lambda filePath: LOG_MT(filePath, arguments, iteratorConfig, f, collection, length)
+def HANDLE_MT(arguments, iteratorConfig, f, collection, length):
+    return lambda filePath: logMTCall(filePath, arguments, iteratorConfig, f, collection, length)
+
+    # def handleMtFilter(fieldValue, collection, length):
+    #     return lambda filePath: logMTFilter(filePath, fieldValue, collection, length)
+
+    # def logMTFilter(filePath, fieldValue, collection, length):
+    #     logFiltered(collection.index(filePath), filePath, collection)
+    #     return fieldValue(filePath)
 
 
-def LOG_MT(filePath, arguments, iteratorConfig, f, collection, length):
+def logMTCall(filePath, arguments, iteratorConfig, f, collection, length):
     itemNo = collection.index(filePath) + 1
-    print("Item #%s of %s starting!\n" % (itemNo, length))
+    print("Item #%s of %s starting!" % (itemNo, length))
     return f(filePath, arguments, iteratorConfig)
 
 
@@ -37,7 +42,7 @@ def MT_convert(filePath, arguments, iteratorConfig):
               (len(kwargsArray)))
 
         for index, kwargs in enumerate(kwargsArray):
-            print("Iterating... %s / %s\n" % (index + 1, len(kwargsArray)))
+            print("Iterating... %s / %s" % (index + 1, len(kwargsArray)))
             convert(**kwargs)
     else:
         arguments["inputPath"] = filePath

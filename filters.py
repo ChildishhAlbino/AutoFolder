@@ -63,7 +63,8 @@ def rawFilter(fieldValue, condition, conditionValue, collection):
     with ThreadPoolExecutor() as executor:
         values = executor.map(handleMtFilter(
             fieldValue, collection, length), collection)
-    filtered = [item for item in values if condition(item, conditionValue)]
+    filtered = [filePath for filePath, value in zip(
+        collection, values) if condition(value, conditionValue)]
     # filtered = [item for index, item in enumerate(collection) if condition(
     #     logFiltered(index, fieldValue(item), collection), conditionValue)]
     return filtered
@@ -82,6 +83,8 @@ filters_types = {
     "video": filterVideos,
     "image": filterImages,
     "file": filterFiles
+
+
 }
 
 video_filter_fields = {
