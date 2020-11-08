@@ -82,9 +82,10 @@ def delete(filePath):
 def copy(startingFolder, destinationFolder, files, deleteSourceFile):
     dirs = [x[0]
             for x in walk(startingFolder) if x[0] != startingFolder]
-    print("Recreating Directory Structure")
+    print("Recreating Directory Structure\n")
 
     if(not exists(destinationFolder)):
+        print("Created destination directory.")
         mkdir(destinationFolder)
 
     for index, dir in enumerate(dirs):

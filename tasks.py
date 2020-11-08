@@ -6,7 +6,6 @@ from dataUtils import createKwargs
 
 
 def TASK_convert(pipelineData, arguments, iteratorConfig):
-    print("Converting %s files!" % (len(pipelineData)))
     for index, file in enumerate(pipelineData):
         print("Converting... %s / %s" % (index + 1, len(pipelineData)))
         # if iterator, generator iterator response.

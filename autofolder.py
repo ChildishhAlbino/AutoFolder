@@ -11,6 +11,8 @@ def main(configLocation):
         data = json.load(f)
     (startingFolder, globalFileMasks, pipeline) = getConfigValues(data)
 
+    input("Press enter to run %s pipeline tasks or CTRL+C to exit. " %
+          (len(pipeline)))
     for index, pipelineTask in enumerate(pipeline):
         (id, fileMask, task, arguments, iterator,
          filter) = getPipelineTaskValues(pipelineTask)
@@ -22,13 +24,13 @@ def main(configLocation):
         # apply filters
         print("Applying filters to %s files." % (len(maskedItems)))
         filtered = applyFilters(filter, maskedItems, globalFileMasks)
-        print("Executing pipeline task: %s on %s files" %
+        print("Executing pipeline task: %s on %s files\n" %
               (id, len(filtered)))
         task = getTaskMethod(task)
         if(task != None):
             task(filtered, arguments, iterator)
         printSeparator()
-    print("FINISHED")
+    input("FINISHED! Press any key to exit.")
 
 
 if (__name__ == "__main__"):
