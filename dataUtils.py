@@ -30,7 +30,6 @@ def createKwargs(arguments, file, iteration):
 
 
 def fillConditionValue(rawFilterValue, valueOptions, globalData):
-    print("f")
     filled = rawFilterValue
     if(filled == "|directoryData|"):
         filled = getFiles(valueOptions["directoryData"])
