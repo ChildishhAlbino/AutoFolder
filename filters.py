@@ -3,6 +3,7 @@ from dataUtils import fillConditionValue
 from pathlib import Path
 from AFEngineUtils import getFilterValues, getFilterFieldValues
 from utils import getVideoDuration, getImageResolution
+from uiUtils import logFiltered
 
 
 def applyFilters(filters, pipelineData, globalFileMasks):
@@ -24,8 +25,8 @@ def filterVideos(filterFields, pipelineData, globalFileMasks):
          valueOptions) = getFilterFieldValues(filterField)
         fieldValue = video_filter_fields[fieldName]
         condition = conditions[filterCondition]
-        filtered = [item for item in filtered if condition(
-            fieldValue(item), conditionValue)]
+        filtered = rawFilter(fieldValue, condition,
+                             conditionValue, filtered)
     return filtered
 
 
@@ -36,8 +37,8 @@ def filterImages(filterFields, pipelineData, globalFileMasks):
          valueOptions) = getFilterFieldValues(filterField)
         fieldValue = image_filter_fields[fieldName]
         condition = conditions[filterCondition]
-        filtered = [item for item in filtered if condition(
-            fieldValue(item), conditionValue)]
+        filtered = rawFilter(fieldValue, condition,
+                             conditionValue, filtered)
     return filtered
 
 
@@ -50,8 +51,14 @@ def filterFiles(filterFields, pipelineData, globalFileMasks):
             conditionValue, valueOptions, {"globalFileMasks": globalFileMasks})
         fieldValue = file_filter_fields[fieldName]
         condition = conditions[filterCondition]
-        filtered = [item for item in filtered if condition(
-            fieldValue(item), filledConditionValue)]
+        filtered = rawFilter(fieldValue, condition,
+                             filledConditionValue, filtered)
+    return filtered
+
+
+def rawFilter(fieldValue, condition, conditionValue, collection):
+    filtered = [item for index, item in enumerate(collection) if condition(
+        logFiltered(index, fieldValue(item), collection), conditionValue)]
     return filtered
 
 
