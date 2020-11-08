@@ -4,14 +4,15 @@ from pathlib import Path
 from AFEngineUtils import getFilterValues, getFilterFieldValues
 from utils import getVideoDuration, getImageResolution
 from uiUtils import logFiltered
+from concurrent.futures import ThreadPoolExecutor
 
 
-def applyFilters(filters, pipelineData, globalFileMasks):
-    if(filters == None):
+def applyFilters(filledFilters, pipelineData, globalFileMasks):
+    if(filledFilters == None):
         return pipelineData
-    filters = getFilterValues(filters)
+    filledFilters = getFilterValues(filledFilters)
     filtered = pipelineData
-    for (filterType, filterFields) in filters:
+    for (filterType, filterFields) in filledFilters:
         filterFunction = filters_types.get(filterType)
         if(filterFunction):
             filtered = filterFunction(filterFields, filtered, globalFileMasks)
@@ -57,9 +58,24 @@ def filterFiles(filterFields, pipelineData, globalFileMasks):
 
 
 def rawFilter(fieldValue, condition, conditionValue, collection):
-    filtered = [item for index, item in enumerate(collection) if condition(
-        logFiltered(index, fieldValue(item), collection), conditionValue)]
+    values = []
+    length = len(collection)
+    with ThreadPoolExecutor() as executor:
+        values = executor.map(handleMtFilter(
+            fieldValue, collection, length), collection)
+    filtered = [item for item in values if condition(item, conditionValue)]
+    # filtered = [item for index, item in enumerate(collection) if condition(
+    #     logFiltered(index, fieldValue(item), collection), conditionValue)]
     return filtered
+
+
+def handleMtFilter(fieldValue, collection, length):
+    return lambda filePath: logMTFilter(filePath, fieldValue, collection, length)
+
+
+def logMTFilter(filePath, fieldValue, collection, length):
+    logFiltered(collection.index(filePath), filePath, collection)
+    return fieldValue(filePath)
 
 
 filters_types = {

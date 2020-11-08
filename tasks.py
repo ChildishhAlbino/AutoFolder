@@ -1,30 +1,47 @@
 # These are the actual functions that will be run by the AF Engine to transform files.
 # They handle validation logic and extract boiler plate from the actual utility functions.
+from os import pipe
+from typing import Collection
 from utils import convert, rename, unzip, delete, copy
 from iterators import getIteratorData
 from dataUtils import createKwargs
+from concurrent.futures import ThreadPoolExecutor
 
 
 def TASK_convert(pipelineData, arguments, iteratorConfig):
-    for index, file in enumerate(pipelineData):
-        print("Converting... %s / %s" % (index + 1, len(pipelineData)))
-        # if iterator, generator iterator response.
-        if(iteratorConfig):
-            iterationData = getIteratorData(iteratorConfig, file)
+    length = len(pipelineData)
+    with ThreadPoolExecutor() as executor:
+        executor.map(WRAP_MT(
+            arguments, iteratorConfig, MT_convert, pipelineData, length), pipelineData, length)
 
-            kwargsArray = [createKwargs(arguments, file, iteration)
-                           for iteration in iterationData]
 
-            print("Iterator detected! Converting file into %s files!" %
-                  (len(kwargsArray)))
+def WRAP_MT(arguments, iteratorConfig, f, collection, length):
+    return lambda filePath: LOG_MT(filePath, arguments, iteratorConfig, f, collection, length)
 
-            for index, kwargs in enumerate(kwargsArray):
-                print("Iterating... %s / %s" % (index + 1, len(kwargsArray)))
-                convert(**kwargs)
-                print()
-        else:
-            arguments["inputPath"] = file
-            convert(**arguments)
+
+def LOG_MT(filePath, arguments, iteratorConfig, f, collection, length):
+    itemNo = collection.index(filePath) + 1
+    print("Item #%s of %s starting!\n" % (itemNo, length))
+    return f(filePath, arguments, iteratorConfig)
+
+
+def MT_convert(filePath, arguments, iteratorConfig):
+    # if iterator, generator iterator response.
+    if(iteratorConfig):
+        iterationData = getIteratorData(iteratorConfig, filePath)
+
+        kwargsArray = [createKwargs(arguments, filePath, iteration)
+                       for iteration in iterationData]
+
+        print("Iterator detected! Converting file into %s files!" %
+              (len(kwargsArray)))
+
+        for index, kwargs in enumerate(kwargsArray):
+            print("Iterating... %s / %s\n" % (index + 1, len(kwargsArray)))
+            convert(**kwargs)
+    else:
+        arguments["inputPath"] = filePath
+        convert(**arguments)
 
 
 def TASK_rename(pipelineData, arguments, iteratorConfig):
