@@ -27,7 +27,7 @@ def HANDLE_MT(arguments, iteratorConfig, f, collection, length):
 def logMTCall(filePath, arguments, iteratorConfig, f, collection, length):
     itemNo = collection.index(filePath) + 1
     print("Item #%s of %s starting!" % (itemNo, length))
-    return f(filePath, arguments, iteratorConfig)
+    f(filePath, arguments, iteratorConfig)
 
 
 def MT_convert(filePath, arguments, iteratorConfig):
