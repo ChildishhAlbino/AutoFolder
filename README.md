@@ -51,6 +51,10 @@ The current lists of tasks includes:
 
 WIP
 
+## Iterators:
+
+WIP
+
 ## Basic process:
 
 For a given pipeline task, the following steps will be run:
