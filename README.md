@@ -49,6 +49,10 @@ The current lists of tasks includes:
 
 ## Filters
 
+Filters allow you to apply tasks to a subset of the files under a file mask based on different categories filter types.
+
+e.g. videos have a duration field, images have a resolution field, files have a file size field etc.
+
 WIP
 
 ## Iterators:
