@@ -99,7 +99,7 @@ def copy(startingFolder, destinationFolder, files, deleteSourceFile):
 
     if(deleteSourceFile):
 
-        print("Deleting source directory contents.")
+        print("Deleting contents of source directory.")
         for dir in dirs:
             rmtree(dir)
 
