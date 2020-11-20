@@ -8,7 +8,6 @@ from pathlib import Path
 from zipfile import ZipFile
 from PIL import Image
 import ffmpy
-from send2trash.plat_win import send2trash
 
 
 def inFileMask(filePath, fileMask, globalFileMasks):
@@ -103,9 +102,7 @@ def copy(startingFolder, destinationFolder, files, deleteSourceFile):
             rmtree(dir)
 
         for file in files:
-            try:
-                send2trash(file)
-            except:
+            if(exists(file)):
                 remove(file)
 
 
