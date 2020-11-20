@@ -134,4 +134,4 @@ def getImageResolution(imagePath):
 
 
 def printSeparator():
-    print("\n" + "-" * 30 + "\n")
+    print("\n" + "-" * 35 + "\n")
