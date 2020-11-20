@@ -98,6 +98,8 @@ def copy(startingFolder, destinationFolder, files, deleteSourceFile):
         copyfile(file, file.replace(startingFolder, destinationFolder))
 
     if(deleteSourceFile):
+
+        print("Deleting source directory contents.")
         for dir in dirs:
             rmtree(dir)
 
