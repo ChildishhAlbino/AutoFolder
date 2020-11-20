@@ -53,6 +53,8 @@ WIP
 
 ## Iterators:
 
+Iterators are a way of turning one file into many others.
+
 WIP
 
 ## Basic process:
