@@ -30,7 +30,7 @@ def main(configLocation):
         if(task != None):
             task(filtered, arguments, iterator)
         printSeparator()
-    # print("This is a test update.")
+    print("This is a test update.")
     input("FINISHED! Press any key to exit.")
 
 
