@@ -69,3 +69,5 @@ For a given pipeline task, the following steps will be run:
 2. Any filters that are to be applied will be applied to the above dataset.
 3. Finally, the task will be run with the above data. If an iterator is present the step will be run multiple times _(for the same file)_ based on the configuration.
 4. If another step is present, the process begins again for that step's transformation. Else, autofolder will begin to dump the source directory to the output directory.
+
+12345
