@@ -83,8 +83,6 @@ filters_types = {
     "video": filterVideos,
     "image": filterImages,
     "file": filterFiles
-
-
 }
 
 video_filter_fields = {

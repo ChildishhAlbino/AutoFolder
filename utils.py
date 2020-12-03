@@ -78,34 +78,8 @@ def delete(filePath):
         shutil.rmtree(filePath)
 
 
-def copy(startingFolder, destinationFolder, files, deleteSourceFile):
-    dirs = [x[0]
-            for x in walk(startingFolder) if x[0] != startingFolder]
-    print("Recreating Directory Structure\n")
-
-    if(not exists(destinationFolder)):
-        print("Created destination directory.")
-        mkdir(destinationFolder)
-
-    for index, dir in enumerate(dirs):
-        print("Creating directory %s / %s" % (index + 1, len(dirs)))
-        replacedDir = dir.replace(startingFolder, destinationFolder)
-        if(not exists(replacedDir)):
-            mkdir(replacedDir)
-
-    for index, file in enumerate(files):
-        print("Coping file! %s / %s" % (index + 1, len(files)))
-        copyfile(file, file.replace(startingFolder, destinationFolder))
-
-    if(deleteSourceFile):
-
-        print("Deleting contents of source directory.")
-        for dir in dirs:
-            rmtree(dir)
-
-        for file in files:
-            if(exists(file)):
-                remove(file)
+def copy(source, destination):
+    copyfile(source, destination)
 
 
 def getVideoDuration(videoPath):
@@ -135,3 +109,20 @@ def getImageResolution(imagePath):
 
 def printSeparator():
     print("\n" + "-" * 35 + "\n")
+
+
+def logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText=None):
+    itemNo = collection.index(filePath) + 1
+    if(overrideText == None):
+        print("Item #%s of %s starting!" % (itemNo, length))
+    else:
+        print(overrideText % (itemNo, length))
+    f(filePath, arguments, iteratorConfig)
+
+
+def getCopyArguments(args):
+    return (
+        args["startingFolder"],
+        args["destinationFolder"],
+        args.get("deleteSourceFile", False)
+    )
