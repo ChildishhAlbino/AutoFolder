@@ -27,12 +27,12 @@ def main(configLocation):
         print("Executing pipeline task: %s on %s files\n" %
               (id, len(filtered)))
         task = getTaskMethod(task)
-        if(task != None):
+        if task is not None:
             task(filtered, arguments, iterator)
         printSeparator()
     input("FINISHED! Press any key to exit.")
 
 
-if (__name__ == "__main__"):
+if __name__ == "__main__":
     clear()
     main("./autofolder-config.json")

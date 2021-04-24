@@ -1,5 +1,5 @@
 from os import walk, scandir
-from os.path import isdir
+from os.path import isdir, getmtime
 
 
 def getFiles(directory):
@@ -8,4 +8,6 @@ def getFiles(directory):
     for dir in dirs:
         newFiles = [file.path for file in scandir(dir)]
         files.extend([file for file in newFiles if isdir(file) == False])
+    files = sorted(files, key=getmtime)
+    print(files)
     return files

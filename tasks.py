@@ -5,8 +5,8 @@ from iterators import getIteratorData
 from dataUtils import createKwargs
 from concurrent.futures import ThreadPoolExecutor
 from utils import getCopyArguments
-from os import remove, rename, walk, mkdir
-from os.path import exists, isfile
+from os import remove, rename, walk, mkdir, utime
+from os.path import exists, isfile, getctime, getmtime
 from shutil import copyfile, rmtree
 
 
@@ -98,3 +98,6 @@ def MT_copy(filePath, arguments, iteratorConfig):
      deleteSourceFile) = getCopyArguments(arguments)
     destinationPath = filePath.replace(startingFolder, destinationFolder)
     copy(filePath, destinationPath)
+    ctime = getctime(filePath)
+    mtime = getmtime(filePath)
+    utime(destinationPath, (ctime, mtime))
