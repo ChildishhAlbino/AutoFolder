@@ -9,5 +9,4 @@ def getFiles(directory):
         newFiles = [file.path for file in scandir(dir)]
         files.extend([file for file in newFiles if isdir(file) == False])
     files = sorted(files, key=getmtime)
-    print(files)
     return files
