@@ -8,6 +8,7 @@ from pathlib import Path
 from zipfile import ZipFile
 from PIL import Image
 import ffmpy
+from datetime import datetime
 
 
 def inFileMask(filePath, fileMask, globalFileMasks):
@@ -29,8 +30,9 @@ def getFileMask(fileMask, globalFileMasks):
         return []
 
 
-def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions):
-    inputSuffix = Path(inputPath).suffix
+def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions, instanceRand, postConversionAction=None):
+    path = Path(inputPath)
+    inputSuffix = path.suffix
     convertedFileName = inputPath.replace(
         "%s" % (inputSuffix), ".%s" % (mimeType))
     duplicateCount = 1
@@ -44,6 +46,35 @@ def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions):
         outputs={convertedFileName: outputOptions}
     )
     convert.run()
+    if(postConversionAction is not None):
+        run_post_coversion(inputPath, postConversionAction,
+                           path, convertedFileName, instanceRand)
+
+
+def run_post_coversion(inputPath, postConversionAction, path, convertedFileName, instanceRand):
+    if(postConversionAction == "DELETE"):
+        delete(inputPath)
+    if(postConversionAction == "STASH"):
+        post_conversion_stash(inputPath, path, convertedFileName, instanceRand)
+
+
+def post_conversion_stash(inputPath, path, convertedFileName, instanceRand):
+    try:
+        source_path = str(path.parent.joinpath("source %s" % (instanceRand)))
+        if(not exists(source_path)):
+            print(source_path)
+            mkdir(source_path)
+        new_file_path = inputPath.replace(
+            str(path.parent), source_path)
+        rename(inputPath, new_file_path)
+        converted_stem = Path(convertedFileName).stem
+        source_stem = path.stem
+        renamed_converted = convertedFileName.replace(
+            converted_stem, source_stem)
+        rename(convertedFileName, renamed_converted)
+    except Exception as e:
+        print(e)
+        raise e
 
 
 def unzip(archivePath, deleteArchive, nested):
@@ -68,6 +99,8 @@ def unzip(archivePath, deleteArchive, nested):
 
 def rename(filePath, newFileName):
     print("rename")
+    print(filePath)
+    print(newFileName)
     os_rename(filePath, newFileName)
 
 
@@ -125,5 +158,5 @@ def getCopyArguments(args):
     return (
         args["startingFolder"],
         args["destinationFolder"],
-        args.get("deleteSourceFile", False)
+        args.get("deleteSourceFiles", False)
     )

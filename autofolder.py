@@ -1,23 +1,28 @@
 import json
 from utils import inFileMask, printSeparator
-from AFEngineUtils import getConfigValues, getPipelineTaskValues, getTaskMethod
+from AFEngineUtils import getConfigValues, getPipelineTaskValues, getTaskMethod, importCustomTasks
 from filters import applyFilters
 from fileUtils import getFiles
 from click import clear
+import uuid
 
 
 def main(configLocation):
     with open(configLocation) as f:
         data = json.load(f)
-    (startingFolder, globalFileMasks, pipeline) = getConfigValues(data)
-
+    (startingFolder, globalFileMasks, pipeline, custom) = getConfigValues(data)
+    if(len(custom) > 0):
+        importCustomTasks(custom)
     input("Press enter to run %s pipeline tasks or CTRL+C to exit. " %
           (len(pipeline)))
+    instance_rand = uuid.uuid4()
+    print(instance_rand)
     for index, pipelineTask in enumerate(pipeline):
         (id, fileMask, task, arguments, iterator,
-         filter) = getPipelineTaskValues(pipelineTask)
+         filter, shallow) = getPipelineTaskValues(pipelineTask)
+        arguments["instanceRand"] = instance_rand
         print("#%s: %s\n" % (index + 1, id))
-        files = getFiles(startingFolder)
+        files = getFiles(startingFolder, shallow)
         print("Applying file mask %s to %s files." % (fileMask, len(files)))
         maskedItems = [item for item in files if inFileMask(
             item, fileMask, globalFileMasks)]

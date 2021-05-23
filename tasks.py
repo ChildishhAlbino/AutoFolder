@@ -1,6 +1,7 @@
 # These are the actual functions that will be run by the AF Engine to transform files.
 # They handle validation logic and extract boiler plate from the actual utility functions.
 from utils import convert, rename, unzip, delete, copy, logMTCall
+from fileUtils import getFiles
 from iterators import getIteratorData
 from dataUtils import createKwargs
 from concurrent.futures import ThreadPoolExecutor
@@ -8,6 +9,8 @@ from utils import getCopyArguments
 from os import remove, rename, walk, mkdir, utime
 from os.path import exists, isfile, getctime, getmtime
 from shutil import copyfile, rmtree
+from pathlib import Path
+import re
 
 
 def TASK_convert(pipelineData, arguments, iteratorConfig):
@@ -41,8 +44,26 @@ def MT_convert(filePath, arguments, iteratorConfig):
 
 
 def TASK_rename(pipelineData, arguments, iteratorConfig):
+    new_file_name_arg = arguments.get("newFileName", None)
+    is_regex = arguments.get("regex", False)
+    replacer = arguments.get("replacer", None)
     for file in pipelineData:
-        rename(file, arguments["newFileName"])
+        new_file_name = new_file_name_arg
+        path = Path(file)
+        parent_path = path.parent
+        file_name = path.name
+        print(file_name)
+        new_file_name = new_file_name_arg
+        if(is_regex is True):
+            if(replacer is not None):
+                new_file_name = re.sub(
+                    new_file_name_arg, replacer, file_name)
+            else:
+                new_file_name = re.search(new_file_name_arg, file_name)[0]
+        print(new_file_name)
+        if(new_file_name is not None):
+            new_file_path = "%s/%s" % (parent_path, new_file_name)
+            rename(file, new_file_path)
 
 
 def TASK_unzip(pipelineData, arguments, iteratorConfig):
@@ -67,13 +88,13 @@ def TASK_copy(pipelineData, arguments, iteratorConfig):
     (startingFolder, destinationFolder,
      deleteSourceFile) = getCopyArguments(arguments)
 
-    dirs = [x[0]
-            for x in walk(startingFolder) if x[0] != startingFolder]
-    print("Recreating Directory Structure\n")
-
     if(not exists(destinationFolder)):
         print("Created destination directory.")
         mkdir(destinationFolder)
+
+    dirs = [x[0]
+            for x in walk(startingFolder) if x[0] != startingFolder]
+    print("Recreating Directory Structure\n")
 
     for index, dir in enumerate(dirs):
         print("Creating directory %s / %s" % (index + 1, len(dirs)))
@@ -86,10 +107,16 @@ def TASK_copy(pipelineData, arguments, iteratorConfig):
         executor.map(HANDLE_MT(
             arguments, iteratorConfig, MT_copy, pipelineData, length, "Copying Item #%s of %s"), pipelineData)
 
-    if(deleteSourceFile):
-        print("Deleting contents of source directory.")
-        TASK_delete(dirs, arguments, iteratorConfig)
+    deleteSourceDirectory(pipelineData, arguments,
+                          iteratorConfig, deleteSourceFile, dirs)
 
+
+def deleteSourceDirectory(pipelineData, arguments, iteratorConfig, deleteSourceFile, dirs):
+    if(deleteSourceFile):
+        shallow = arguments.get('shallow', False)
+        print("Deleting contents of source directory.")
+        if(not shallow):
+            TASK_delete(dirs, arguments, iteratorConfig)
         TASK_delete(pipelineData, arguments, iteratorConfig)
 
 
