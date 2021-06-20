@@ -77,7 +77,7 @@ def post_conversion_stash(inputPath, path, convertedFileName, instanceRand):
         raise e
 
 
-def unzip(archivePath, deleteArchive, nested):
+def unzip(archivePath, deleteArchive, nested, instanceRand):
     print("unzip")
 
     path = Path(archivePath)

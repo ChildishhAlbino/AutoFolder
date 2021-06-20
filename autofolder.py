@@ -15,7 +15,7 @@ def main(configLocation):
         importCustomTasks(custom)
     input("Press enter to run %s pipeline tasks or CTRL+C to exit. " %
           (len(pipeline)))
-    instance_rand = uuid.uuid4()
+    instance_rand = str(uuid.uuid4())
     print(instance_rand)
     for index, pipelineTask in enumerate(pipeline):
         (id, fileMask, task, arguments, iterator,
