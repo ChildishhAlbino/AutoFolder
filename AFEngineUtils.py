@@ -19,7 +19,8 @@ def getConfigValues(config):
         config["starting-folder"],
         config["globalFileMasks"],
         config["pipeline"],
-        config.get("custom", [])
+        config.get("custom", []),
+        config.get("dryRun", False)
     )
 
 

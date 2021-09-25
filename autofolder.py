@@ -10,9 +10,11 @@ import uuid
 def main(configLocation):
     with open(configLocation) as f:
         data = json.load(f)
-    (startingFolder, globalFileMasks, pipeline, custom) = getConfigValues(data)
+    (startingFolder, globalFileMasks, pipeline,
+     custom, dryRun) = getConfigValues(data)
     if(len(custom) > 0):
         importCustomTasks(custom)
+    print(dryRun)
     input("Press enter to run %s pipeline tasks or CTRL+C to exit. " %
           (len(pipeline)))
     instance_rand = str(uuid.uuid4())
@@ -32,7 +34,7 @@ def main(configLocation):
         print("Executing pipeline task: %s on %s files\n" %
               (id, len(filtered)))
         task = getTaskMethod(task)
-        if task is not None:
+        if task is not None and not dryRun:
             task(filtered, arguments, iterator)
         printSeparator()
     input("FINISHED! Press any key to exit.")

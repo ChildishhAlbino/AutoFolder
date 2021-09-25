@@ -1,7 +1,7 @@
 
 
-def logFiltered(index, item, collection):
-    length = len(collection)
+def logFiltered(index, item, collection, collectionSize: int = None):
+    length = len(collection) if collectionSize is None else collectionSize
     if(length == 0):
         return item
     itemNo = index + 1

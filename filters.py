@@ -13,6 +13,7 @@ def applyFilters(filledFilters, pipelineData, globalFileMasks):
     filledFilters = getFilterValues(filledFilters)
     filtered = pipelineData
     for (filterType, filterFields) in filledFilters:
+
         filterFunction = filters_types.get(filterType)
         if(filterFunction):
             filtered = filterFunction(filterFields, filtered, globalFileMasks)
@@ -60,14 +61,29 @@ def filterFiles(filterFields, pipelineData, globalFileMasks):
 def rawFilter(fieldValue, condition, conditionValue, collection):
     values = []
     length = len(collection)
+    print("Generating filter field data...")
     with ThreadPoolExecutor() as executor:
         values = executor.map(handleMtFilter(
             fieldValue, collection, length), collection)
-    filtered = [filePath for filePath, value in zip(
-        collection, values) if condition(value, conditionValue)]
-    # filtered = [item for index, item in enumerate(collection) if condition(
-    #     logFiltered(index, fieldValue(item), collection), conditionValue)]
+    print("Filtering on generated data...")
+    zipped = zip(
+        collection, values)
+    zipList = list(zipped)
+    collectionSize = len(zipList)
+    filtered = [filePath for filePath,
+                value in zipList if logCondition(condition, value, conditionValue, collectionSize, zipList.index((filePath, value)))]
     return filtered
+
+
+def logCondition(condition, value, conditionValue, collectionSize, itemIndex):
+    res = condition(value, conditionValue)
+    logFiltered(itemIndex, None, None, collectionSize=collectionSize)
+    return res
+
+
+def printItem(item, collection):
+    print(f"{collection}/{len(collection)}")
+    return item
 
 
 def handleMtFilter(fieldValue, collection, length):
