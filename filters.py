@@ -6,17 +6,20 @@ from utils import getVideoDuration, getImageResolution
 from uiUtils import logFiltered
 from concurrent.futures import ThreadPoolExecutor
 
+filter_data_cache = {}
+
 
 def applyFilters(filledFilters, pipelineData, globalFileMasks):
+    global filter_data_cache
     if(filledFilters == None):
         return pipelineData
     filledFilters = getFilterValues(filledFilters)
     filtered = pipelineData
     for (filterType, filterFields) in filledFilters:
-
         filterFunction = filters_types.get(filterType)
         if(filterFunction):
             filtered = filterFunction(filterFields, filtered, globalFileMasks)
+    filter_data_cache = {}
     return filtered
 
 
@@ -28,7 +31,7 @@ def filterVideos(filterFields, pipelineData, globalFileMasks):
         fieldValue = video_filter_fields[fieldName]
         condition = conditions[filterCondition]
         filtered = rawFilter(fieldValue, condition,
-                             conditionValue, filtered)
+                             conditionValue, filtered, fieldName)
     return filtered
 
 
@@ -40,7 +43,7 @@ def filterImages(filterFields, pipelineData, globalFileMasks):
         fieldValue = image_filter_fields[fieldName]
         condition = conditions[filterCondition]
         filtered = rawFilter(fieldValue, condition,
-                             conditionValue, filtered)
+                             conditionValue, filtered, fieldName)
     return filtered
 
 
@@ -54,17 +57,23 @@ def filterFiles(filterFields, pipelineData, globalFileMasks):
         fieldValue = file_filter_fields[fieldName]
         condition = conditions[filterCondition]
         filtered = rawFilter(fieldValue, condition,
-                             filledConditionValue, filtered)
+                             filledConditionValue, filtered, fieldName)
     return filtered
 
 
-def rawFilter(fieldValue, condition, conditionValue, collection):
+def rawFilter(fieldValue, condition, conditionValue, collection, fieldName):
+    global filter_data_cache
     values = []
     length = len(collection)
-    print("Generating filter field data...")
-    with ThreadPoolExecutor() as executor:
-        values = executor.map(handleMtFilter(
-            fieldValue, collection, length), collection)
+    generated_data = filter_data_cache.get(fieldName)
+    if not generated_data:
+        print("Generating filter field data...")
+        with ThreadPoolExecutor() as executor:
+            values = executor.map(handleMtFilter(
+                fieldValue, collection, length), collection)
+        filter_data_cache[fieldName] = values
+    else:
+        values = generated_data
     print("Filtering on generated data...")
     zipped = zip(
         collection, values)

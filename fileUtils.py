@@ -3,7 +3,6 @@ from os.path import isdir, getmtime
 
 
 def getFiles(directory, shallow=False):
-    print(directory)
     files = []
     if(shallow):
         newFiles = [file.path for file in scandir(directory)]
