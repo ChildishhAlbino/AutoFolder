@@ -97,8 +97,14 @@ def unzip(archivePath, deleteArchive, nested, instanceRand):
         remove(archivePath)
 
 
+def renameFile(filePath, newName):
+    path = Path(filePath)
+    file_name = path.stem
+    new_file_path = filePath.replace(file_name, newName)
+    rename(filePath, new_file_path)
+
+
 def rename(filePath, newFileName):
-    print("rename")
     print(filePath)
     print(newFileName)
     os_rename(filePath, newFileName)
@@ -146,12 +152,15 @@ def printSeparator():
 
 
 def logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText=None):
-    itemNo = collection.index(filePath) + 1
-    if (overrideText == None):
-        print("Item #%s of %s starting!" % (itemNo, length))
-    else:
-        print(overrideText % (itemNo, length))
-    f(filePath, arguments, iteratorConfig)
+    try:
+        itemNo = collection.index(filePath) + 1
+        if (overrideText == None):
+            print("Item #%s of %s starting!" % (itemNo, length))
+        else:
+            print(overrideText % (itemNo, length))
+        f(filePath, arguments, iteratorConfig)
+    except Exception as e:
+        print(e)
 
 
 def getCopyArguments(args):
