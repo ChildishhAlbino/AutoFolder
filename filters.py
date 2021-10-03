@@ -14,47 +14,31 @@ def applyFilters(filledFilters, pipelineData, globalFileMasks):
     if(filledFilters == None):
         return pipelineData
     filledFilters = getFilterValues(filledFilters)
-    filtered = pipelineData
+    totalFiltered = []
     for (filterType, filterFields) in filledFilters:
-        filterFunction = filters_types.get(filterType)
-        if(filterFunction):
-            filtered = filterFunction(filterFields, filtered, globalFileMasks)
+        filterTypeMapping = filter_type_fields.get(filterType)
+        if(filterTypeMapping):
+            filtered = applyFilterFields(
+                filterTypeMapping,
+                filterFields,
+                pipelineData if len(totalFiltered) == 0 else totalFiltered,
+                globalFileMasks)
+            totalFiltered += filtered
     filter_data_cache = {}
-    return filtered
+    return list(set(totalFiltered))
 
 
-def filterVideos(filterFields, pipelineData, globalFileMasks):
+def applyFilterFields(filterTypeMapping, filterFields, pipelineData, globalFileMasks):
     filtered = pipelineData
     for filterField in filterFields:
+
         (fieldName, filterCondition, conditionValue,
          valueOptions) = getFilterFieldValues(filterField)
-        fieldValue = video_filter_fields[fieldName]
-        condition = conditions[filterCondition]
-        filtered = rawFilter(fieldValue, condition,
-                             conditionValue, filtered, fieldName)
-    return filtered
-
-
-def filterImages(filterFields, pipelineData, globalFileMasks):
-    filtered = pipelineData
-    for filterField in filterFields:
-        (fieldName, filterCondition, conditionValue,
-         valueOptions) = getFilterFieldValues(filterField)
-        fieldValue = image_filter_fields[fieldName]
-        condition = conditions[filterCondition]
-        filtered = rawFilter(fieldValue, condition,
-                             conditionValue, filtered, fieldName)
-    return filtered
-
-
-def filterFiles(filterFields, pipelineData, globalFileMasks):
-    filtered = pipelineData
-    for filterField in filterFields:
-        (fieldName, filterCondition, conditionValue,
-         valueOptions) = getFilterFieldValues(filterField)
+        print("Filtering %s files based on %s." %
+              (len(filtered), fieldName))
         filledConditionValue, filledLabel = fillConditionValue(
             conditionValue, valueOptions, {"globalFileMasks": globalFileMasks})
-        fieldValue = file_filter_fields[fieldName]
+        fieldValue = filterTypeMapping[fieldName]
         condition = conditions[filterCondition]
         filtered = rawFilter(fieldValue, condition,
                              filledConditionValue, filtered, fieldName)
@@ -69,12 +53,13 @@ def rawFilter(fieldValue, condition, conditionValue, collection, fieldName):
     if not generated_data:
         print("Generating filter field data...")
         with ThreadPoolExecutor() as executor:
-            values = executor.map(handleMtFilter(
+            res = executor.map(handleMtFilter(
                 fieldValue, collection, length), collection)
-        filter_data_cache[fieldName] = values
+            values = [item for item in res]
+            filter_data_cache[fieldName] = values
     else:
+        print("Using cached filter field data...")
         values = generated_data
-    print("Filtering on generated data...")
     zipped = zip(
         collection, values)
     zipList = list(zipped)
@@ -104,12 +89,6 @@ def logMTFilter(filePath, fieldValue, collection, length):
     return fieldValue(filePath)
 
 
-filters_types = {
-    "video": filterVideos,
-    "image": filterImages,
-    "file": filterFiles
-}
-
 video_filter_fields = {
     "duration": getVideoDuration,
 }
@@ -120,6 +99,13 @@ image_filter_fields = {
 
 file_filter_fields = {
     "fileName": lambda f: f
+}
+
+
+filter_type_fields = {
+    "video": video_filter_fields,
+    "image": image_filter_fields,
+    "file": file_filter_fields
 }
 
 conditions = {

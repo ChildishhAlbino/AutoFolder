@@ -31,7 +31,6 @@ def createKwargs(arguments, file, iteration):
 
 def fillConditionValue(rawFilterValue, valueOptions, globalData):
     filled = rawFilterValue
-    print(filled)
     if(filled == "|directoryData|"):
         filled = getFiles(valueOptions["directoryData"])
         filled = [f for f in filled if inFileMask(
