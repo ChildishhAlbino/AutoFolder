@@ -32,8 +32,8 @@ def main(configLocation):
         print("Executing pipeline task: %s on %s files\n" %
               (id, len(filtered)))
         task = getTaskMethod(task)
-        if task is not None and not dryRun:
-            task(filtered, arguments, iterator)
+        if task is not None:
+            task(filtered, arguments, iterator, dryRun)
         printSeparator()
     input("FINISHED! Press any key to exit.")
 

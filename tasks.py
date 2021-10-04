@@ -5,7 +5,7 @@ from fileUtils import getFiles
 from iterators import getIteratorData
 from dataUtils import createKwargs
 from concurrent.futures import ThreadPoolExecutor
-from utils import getCopyArguments
+from utils import getCopyArguments, isDryRun
 from os import remove, rename, walk, mkdir, utime
 from os.path import exists, isfile, getctime, getmtime
 from shutil import copyfile, rmtree
@@ -13,37 +13,43 @@ from pathlib import Path
 import re
 
 
-def TASK_convert(pipelineData, arguments, iteratorConfig):
+def TASK_convert(pipelineData, arguments, iteratorConfig, isDryRun):
     length = len(pipelineData)
-    with ThreadPoolExecutor() as executor:
+    maxWorkers = arguments.get('maxWorkers')
+    with ThreadPoolExecutor(max_workers=maxWorkers) as executor:
         executor.map(HANDLE_MT(
-            arguments, iteratorConfig, MT_convert, pipelineData, length, "Converting Item #%s of %s"), pipelineData)
+            arguments, iteratorConfig, MT_convert, pipelineData, length, "Converting Item #%s of %s", isDryRun), pipelineData)
 
 
-def HANDLE_MT(arguments, iteratorConfig, f, collection, length, overrideText=None):
-    return lambda filePath: logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText)
+def HANDLE_MT(arguments, iteratorConfig, f, collection, length, overrideText=None, isDryRun=False):
+    return lambda filePath: logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText, isDryRun)
 
 
-def MT_convert(filePath, arguments, iteratorConfig):
+def MT_convert(filePath, arguments, iteratorConfig, isDryRun):
     # if iterator, generator iterator response.
     if(iteratorConfig):
         iterationData = getIteratorData(iteratorConfig, filePath)
-
         kwargsArray = [createKwargs(arguments, filePath, iteration)
                        for iteration in iterationData]
-
-        print("Iterator detected! Converting file into %s files!" %
-              (len(kwargsArray)))
+        print("Iterator detected! Converting file %s into %s files!" %
+              (filePath, len(kwargsArray)))
 
         for index, kwargs in enumerate(kwargsArray):
-            print("Iterating... %s / %s" % (index + 1, len(kwargsArray)))
-            convert(**kwargs)
+            print("Iterating... %s / %s" %
+                  (index + 1, len(kwargsArray)))
+            if not isDryRun:
+                convert(**kwargs)
+            else:
+                print(f"Would iteratively convert: {filePath}")
     else:
         arguments["inputPath"] = filePath
-        convert(**arguments)
+        if not isDryRun:
+            convert(**arguments)
+        else:
+            print(f"Would convert: {filePath}")
 
 
-def TASK_rename(pipelineData, arguments, iteratorConfig):
+def TASK_rename(pipelineData, arguments, iteratorConfig, isDryRun):
     new_file_name_arg = arguments.get("newFileName", None)
     is_regex = arguments.get("regex", False)
     replacer = arguments.get("replacer", None)
@@ -63,28 +69,37 @@ def TASK_rename(pipelineData, arguments, iteratorConfig):
         print(new_file_name)
         if(new_file_name is not None):
             new_file_path = "%s/%s" % (parent_path, new_file_name)
-            rename(file, new_file_path)
+            if not isDryRun:
+                rename(file, new_file_path)
+            else:
+                print(f"Would rename: {file} to {new_file_path}")
 
 
-def TASK_unzip(pipelineData, arguments, iteratorConfig):
+def TASK_unzip(pipelineData, arguments, iteratorConfig, isDryRun):
     for index, file in enumerate(pipelineData):
         print("Converting... %s / %s" % (index + 1, len(pipelineData)))
         arguments["archivePath"] = file
-        unzip(**arguments)
+        if not isDryRun:
+            unzip(**arguments)
+        else:
+            print(f"Would unzip: {file}")
 
 
-def TASK_delete(pipelineData, arguments, iteratorConfig):
+def TASK_delete(pipelineData, arguments, iteratorConfig, isDryRun):
     length = len(pipelineData)
     with ThreadPoolExecutor() as executor:
         executor.map(HANDLE_MT(
-            arguments, iteratorConfig, MT_delete, pipelineData, length, "Deleting Item #%s of %s"), pipelineData)
+            arguments, iteratorConfig, MT_delete, pipelineData, length, "Deleting Item #%s of %s", isDryRun), pipelineData)
 
 
-def MT_delete(filePath, arguments, iteratorConfig):
-    delete(filePath)
+def MT_delete(filePath, arguments, iteratorConfig, isDryRun):
+    if not isDryRun:
+        delete(filePath)
+    else:
+        print(f"Would delete: {filePath}")
 
 
-def TASK_copy(pipelineData, arguments, iteratorConfig):
+def TASK_copy(pipelineData, arguments, iteratorConfig, isDryRun):
     (startingFolder, destinationFolder,
      deleteSourceFile) = getCopyArguments(arguments)
 
@@ -100,15 +115,17 @@ def TASK_copy(pipelineData, arguments, iteratorConfig):
         print("Creating directory %s / %s" % (index + 1, len(dirs)))
         replacedDir = dir.replace(startingFolder, destinationFolder)
         if(not exists(replacedDir)):
-            mkdir(replacedDir)
-
+            if not isDryRun:
+                mkdir(replacedDir)
+            else:
+                print(f"Would recreate: {replacedDir}")
     length = len(pipelineData)
     with ThreadPoolExecutor() as executor:
         executor.map(HANDLE_MT(
-            arguments, iteratorConfig, MT_copy, pipelineData, length, "Copying Item #%s of %s"), pipelineData)
-
-    deleteSourceDirectory(pipelineData, arguments,
-                          iteratorConfig, deleteSourceFile, dirs)
+            arguments, iteratorConfig, MT_copy, pipelineData, length, "Copying Item #%s of %s", isDryRun), pipelineData)
+    if not isDryRun:
+        deleteSourceDirectory(pipelineData, arguments,
+                              iteratorConfig, deleteSourceFile, dirs)
 
 
 def deleteSourceDirectory(pipelineData, arguments, iteratorConfig, deleteSourceFile, dirs):
@@ -116,15 +133,18 @@ def deleteSourceDirectory(pipelineData, arguments, iteratorConfig, deleteSourceF
         shallow = arguments.get('shallow', False)
         print("Deleting contents of source directory.")
         if(not shallow):
-            TASK_delete(dirs, arguments, iteratorConfig)
-        TASK_delete(pipelineData, arguments, iteratorConfig)
+            TASK_delete(dirs, arguments, iteratorConfig, False)
+        TASK_delete(pipelineData, arguments, iteratorConfig, False)
 
 
-def MT_copy(filePath, arguments, iteratorConfig):
+def MT_copy(filePath, arguments, iteratorConfig, isDryRun):
     (startingFolder, destinationFolder,
      deleteSourceFile) = getCopyArguments(arguments)
     destinationPath = filePath.replace(startingFolder, destinationFolder)
-    copy(filePath, destinationPath)
-    ctime = getctime(filePath)
-    mtime = getmtime(filePath)
-    utime(destinationPath, (ctime, mtime))
+    if not isDryRun:
+        copy(filePath, destinationPath)
+        ctime = getctime(filePath)
+        mtime = getmtime(filePath)
+        utime(destinationPath, (ctime, mtime))
+    else:
+        print(f"Would copy: {filePath}")

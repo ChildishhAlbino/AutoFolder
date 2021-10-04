@@ -2,8 +2,8 @@ import json
 import shutil
 from shutil import copyfile, rmtree
 import subprocess
-from os import remove, rename as os_rename, walk, mkdir
-from os.path import exists, isfile
+from os import remove, rename as os_rename, walk, mkdir, utime
+from os.path import exists, isfile, getctime, getmtime
 from pathlib import Path
 from zipfile import ZipFile
 from PIL import Image
@@ -45,7 +45,14 @@ def convert(inputPath, mimeType, globalOptions, inputOptions, outputOptions, ins
         inputs={inputPath: inputOptions},
         outputs={convertedFileName: outputOptions}
     )
-    convert.run()
+    try:
+        convert.run()
+    except Exception as e:
+        print(e)
+        print("Error converting", inputPath)
+    ctime = getctime(inputPath)
+    mtime = getmtime(inputPath)
+    utime(convertedFileName, (ctime, mtime))
     if(postConversionAction is not None):
         run_post_coversion(inputPath, postConversionAction,
                            path, convertedFileName, instanceRand)
@@ -132,7 +139,7 @@ def getVideoDuration(videoPath):
     meta = json.loads(metaData[0].decode('utf-8'))
     duration = meta["streams"][0]["duration"]
     if duration is not None:
-        duration = round(float(duration), 0)
+        duration = round(float(duration), 2)
         return duration
 
 
@@ -147,18 +154,23 @@ def getImageResolution(imagePath):
         pass
 
 
+def isDryRun(arguments):
+    isDryRun = arguments.get('dryRun', False)
+    return isDryRun
+
+
 def printSeparator():
     print("\n" + "-" * 35 + "\n")
 
 
-def logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText=None):
+def logMTCall(filePath, arguments, iteratorConfig, f, collection, length, overrideText=None, isDryRun=False):
     try:
         itemNo = collection.index(filePath) + 1
         if (overrideText == None):
             print("Item #%s of %s starting!" % (itemNo, length))
         else:
             print(overrideText % (itemNo, length))
-        f(filePath, arguments, iteratorConfig)
+        f(filePath, arguments, iteratorConfig, isDryRun)
     except Exception as e:
         print(e)
 

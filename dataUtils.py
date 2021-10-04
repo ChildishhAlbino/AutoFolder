@@ -9,7 +9,7 @@ def fillWithIterationData(iterationData, argument):
     (value, iterationValue) = iterationData
     if("|value|" in str(argument)):
         argument = argument.replace("|value|", str(value))
-    if("|iterationValue|" in argument):
+    if("|iterationValue|" in str(argument)):
         argument = argument.replace(
             "|iterationValue|", str(iterationValue))
     return argument
@@ -18,8 +18,9 @@ def fillWithIterationData(iterationData, argument):
 def fillArguments(iterationData, arguments):
     newArguments = {}
     for parameter, argument in arguments.items():
-        newArguments[parameter] = fillWithIterationData(
-            iterationData, argument)
+        if parameter != "maxWorkers":
+            newArguments[parameter] = fillWithIterationData(
+                iterationData, argument)
     return newArguments
 
 
