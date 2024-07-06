@@ -15,7 +15,7 @@ def inFileMask(filePath, fileMask, globalFileMasks):
     if (fileMask == None):
         return True
     p = Path(filePath)
-    return p.suffix in getFileMask(fileMask, globalFileMasks)
+    return p.suffix.lower() in getFileMask(fileMask, globalFileMasks)
 
 
 def getFileMask(fileMask, globalFileMasks):
