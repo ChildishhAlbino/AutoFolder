@@ -101,7 +101,7 @@ def MT_delete(filePath, arguments, iteratorConfig, isDryRun):
 
 def TASK_copy(pipelineData, arguments, iteratorConfig, isDryRun):
     (startingFolder, destinationFolder,
-     deleteSourceFile) = getCopyArguments(arguments)
+     deleteOriginalFiles) = getCopyArguments(arguments)
 
     if(not exists(destinationFolder)):
         print("Created destination directory.")
@@ -109,34 +109,21 @@ def TASK_copy(pipelineData, arguments, iteratorConfig, isDryRun):
 
     dirs = [x[0]
             for x in walk(startingFolder) if x[0] != startingFolder]
-    print("Recreating Directory Structure\n")
-
-    for index, dir in enumerate(dirs):
-        print("Creating directory %s / %s" % (index + 1, len(dirs)))
-        replacedDir = dir.replace(startingFolder, destinationFolder)
-        if(not exists(replacedDir)):
-            if not isDryRun:
-                mkdir(replacedDir)
-            else:
-                print(f"Would recreate: {replacedDir}")
+    # print("Recreating Directory Structure\n")
     length = len(pipelineData)
     with ThreadPoolExecutor() as executor:
         executor.map(HANDLE_MT(
             arguments, iteratorConfig, MT_copy, pipelineData, length, "Copying Item #%s of %s", isDryRun), pipelineData)
     if not isDryRun:
         deleteSourceDirectory(pipelineData, arguments,
-                              iteratorConfig, deleteSourceFile, dirs)
+                              iteratorConfig, deleteOriginalFiles, dirs)
 
 
-def deleteSourceDirectory(pipelineData, arguments, iteratorConfig, deleteSourceFile, dirs):
-    if(deleteSourceFile):
-        shallow = arguments.get('shallow', False)
-        print("Deleting contents of source directory.")
-        if(not shallow):
-            TASK_delete(dirs, arguments, iteratorConfig, False)
+def deleteSourceDirectory(pipelineData, arguments, iteratorConfig, deleteOriginalFiles, dirs):
+    if(deleteOriginalFiles and len(pipelineData) > 0):
+        print("Deleting original copied of filtered files...")
         TASK_delete(pipelineData, arguments, iteratorConfig, False)
-
-
+     
 def MT_copy(filePath, arguments, iteratorConfig, isDryRun):
     (startingFolder, destinationFolder,
      deleteSourceFile) = getCopyArguments(arguments)

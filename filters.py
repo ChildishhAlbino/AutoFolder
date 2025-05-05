@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 filter_data_cache = {}
 
-
 def applyFilters(filledFilters, pipelineData, globalFileMasks):
     global filter_data_cache
     if(filledFilters == None):
@@ -116,5 +115,7 @@ conditions = {
     ">": lambda x, y: x > y,
     ">=": lambda x, y: x >= y,
     "in": lambda x, y: x in y,
+    # This is a small hack
+    "contains": lambda x, y: y in x,
     "any-item-in": lambda x, y: len([i for i in y if Path(i).stem in x]) > 0
 }

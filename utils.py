@@ -2,8 +2,8 @@ import json
 import shutil
 from shutil import copyfile, rmtree
 import subprocess
-from os import remove, rename as os_rename, walk, mkdir, utime
-from os.path import exists, isfile, getctime, getmtime
+from os import remove, rename as os_rename, walk, mkdir, utime, makedirs
+from os.path import exists, isfile, getctime, getmtime, dirname
 from pathlib import Path
 from zipfile import ZipFile
 from PIL import Image
@@ -125,6 +125,8 @@ def delete(filePath):
 
 
 def copy(source, destination):
+    # https://stackoverflow.com/questions/2793789/create-destination-path-for-shutil-copy-files
+    makedirs(dirname(destination), exist_ok=True)
     copyfile(source, destination)
 
 
@@ -179,5 +181,5 @@ def getCopyArguments(args):
     return (
         args["startingFolder"],
         args["destinationFolder"],
-        args.get("deleteSourceFiles", False)
+        args.get("deleteOriginalFiles", False)
     )
